@@ -1,0 +1,115 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+from django.shortcuts import get_object_or_404
+
+from .models import Cart, CartItem
+from .serializers import AddToCartSerializer, CartItemSerializer, UpdateCartItemSerializer
+from products.models import Product
+
+
+class AddToCartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 🔹 نجيب المنتج أولًا
+        product = get_object_or_404(
+            Product,
+            id=request.data.get("product_id"),
+            is_active=True
+        )
+
+        serializer = AddToCartSerializer(
+            data=request.data,
+            context={"product": product}  # 🔥 مهم
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        quantity = serializer.validated_data["quantity"]
+
+        # 🔹 نجيب الكارت
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        # 🔹 هل المنتج موجود؟
+        cart_item = CartItem.objects.filter(
+            cart=cart,
+            product=product
+        ).first()
+
+        if cart_item:
+            cart_item.quantity += quantity
+            cart_item.save()
+        else:
+            CartItem.objects.create(
+                cart=cart,
+                product=product,
+                quantity=quantity
+            )
+
+        return Response(
+            {"message": "Product added to cart"},
+            status=status.HTTP_200_OK
+        )
+
+
+class CartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        items = cart.items.select_related("product").all()
+        serializer = CartItemSerializer(items, many=True)
+
+        return Response({
+            "items": serializer.data
+        })
+
+
+class RemoveFromCartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, item_id):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        cart_item = get_object_or_404(
+            CartItem,
+            id=item_id,
+            cart=cart
+        )
+
+        cart_item.delete()
+
+        return Response({"message": "Item removed from cart"})
+
+
+class UpdateCartItemAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, item_id):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        cart_item = get_object_or_404(
+            CartItem,
+            id=item_id,
+            cart=cart
+        )
+
+        serializer = UpdateCartItemSerializer(
+            data=request.data,
+            context={"cart_item": cart_item}  # 🔥 هنا السر
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        cart_item.quantity = serializer.validated_data["quantity"]
+        cart_item.save()
+
+        return Response({
+            "message": "Cart item updated",
+            "quantity": cart_item.quantity
+        })
+    
