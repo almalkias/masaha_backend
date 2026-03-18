@@ -14,20 +14,10 @@ class AddToCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # 🔹 نجيب المنتج أولًا
-        product = get_object_or_404(
-            Product,
-            id=request.data.get("product_id"),
-            is_active=True
-        )
-
-        serializer = AddToCartSerializer(
-            data=request.data,
-            context={"product": product}  # 🔥 مهم
-        )
-
+        serializer = AddToCartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        product = serializer.validated_data["product"]
         quantity = serializer.validated_data["quantity"]
 
         # 🔹 نجيب الكارت
@@ -40,7 +30,16 @@ class AddToCartAPIView(APIView):
         ).first()
 
         if cart_item:
-            cart_item.quantity += quantity
+            new_quantity = cart_item.quantity + quantity
+
+            # 🔴 تحقق إضافي (مهم جدًا)
+            if new_quantity > product.stock:
+                return Response(
+                    {"error": f"Only {product.stock} items available"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            cart_item.quantity = new_quantity
             cart_item.save()
         else:
             CartItem.objects.create(

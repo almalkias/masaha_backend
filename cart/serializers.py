@@ -1,20 +1,19 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import CartItem
 from products.models import Product
 
 
 class AddToCartSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField()
+    product = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.filter(is_active=True)
+    )
     quantity = serializers.IntegerField(min_value=1)
 
     def validate(self, data):
-        product = self.context.get("product")
-        quantity = data.get("quantity")
+        product = data["product"]
+        quantity = data["quantity"]
 
-        if not product:
-            raise serializers.ValidationError("Product not found")
-
-        # 🔴 تحقق من المخزون
         if quantity > product.stock:
             raise serializers.ValidationError(
                 {"quantity": f"Only {product.stock} items available"}
