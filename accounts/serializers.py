@@ -1,7 +1,21 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import CustomUser, Profile
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # إضافة بيانات المستخدم
+        data["user"] = {
+            "id": self.user.id,
+            "email": self.user.email,
+        }
+
+        return data
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -34,6 +48,65 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="user.email", required=False)
+
+    # 🔥 حقل للكتابة
+    image = serializers.ImageField(required=False, allow_null=True)
+
+    # 🔥 حقل للقراءة (URL كامل)
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = ["full_name", "phone", "address"]
+        fields = [
+            "first_name",
+            "last_name",
+            "country",
+            "city",
+            "birth_date",
+            "email",
+            "image",      # للرفع
+            "image_url",  # للعرض
+        ]
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+    def update(self, instance, validated_data):
+        # 🔥 تحديث الإيميل
+        user_data = validated_data.pop("user", None)
+
+        if user_data:
+            instance.user.email = user_data.get("email", instance.user.email)
+            instance.user.save()
+
+        return super().update(instance, validated_data)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField()
+    new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
+    def validate(self, data):
+        user = self.context["request"].user
+
+        # ✅ تحقق من كلمة المرور الحالية
+        if not user.check_password(data["current_password"]):
+            raise serializers.ValidationError({
+                "current_password": "كلمة المرور الحالية غير صحيحة"
+            })
+
+        # ✅ تحقق من التطابق
+        if data["new_password"] != data["confirm_password"]:
+            raise serializers.ValidationError({
+                "confirm_password": "كلمة المرور غير متطابقة"
+            })
+
+        # ✅ تحقق من قوة الباسورد (Django validators)
+        validate_password(data["new_password"], user)
+
+        return data

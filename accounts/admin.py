@@ -21,7 +21,15 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        ("Permissions", {
+            "fields": (
+                "is_active",
+                "is_staff",
+                "is_superuser",
+                "groups",
+                "user_permissions"
+            )
+        }),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
 
@@ -30,7 +38,14 @@ class CustomUserAdmin(UserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("email", "password1", "password2", "is_staff", "is_superuser", "is_active"),
+                "fields": (
+                    "email",
+                    "password1",
+                    "password2",
+                    "is_staff",
+                    "is_superuser",
+                    "is_active",
+                ),
             },
         ),
     )
@@ -38,5 +53,6 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "full_name", "phone")
-    search_fields = ("user__email", "full_name", "phone")
+    list_display = ("user", "first_name", "last_name", "country", "city")
+    search_fields = ("user__email", "first_name", "last_name", "country", "city")
+    

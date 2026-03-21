@@ -41,9 +41,12 @@ class Profile(models.Model):
         related_name="profile"
     )
 
-    full_name = models.CharField(max_length=255, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.TextField(blank=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    image = models.ImageField(upload_to="profiles/", null=True, blank=True)
 
     def __str__(self):
         return self.user.email
