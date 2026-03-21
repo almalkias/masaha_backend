@@ -2,16 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
 
 from .models import Product
 from .serializers import ProductSerializer
 
+    
+class ProductListAPIView(ListAPIView):
+    queryset = Product.objects.filter(is_active=True)
+    serializer_class = ProductSerializer
 
-class ProductListAPIView(APIView):
-    def get(self, request):
-        products = Product.objects.filter(is_active=True)
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_serializer_context(self):
+        return {"request": self.request}
 
 
 class ProductDetailAPIView(APIView):
