@@ -25,4 +25,4 @@ class ProductSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.image.url)
 
         return None
-        
+    
