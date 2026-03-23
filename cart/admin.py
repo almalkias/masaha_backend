@@ -8,10 +8,10 @@ class CartItemInline(admin.TabularInline):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ("user", "created_at")
+    list_display = ("id", "user", "created_at")
     inlines = [CartItemInline]
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_display = ("cart", "product", "quantity")
+    list_display = ("id", "cart", "product", "quantity")
     

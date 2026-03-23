@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'cart',
     'order',
     'favourites',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +150,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+STRIPE_SECRET_KEY = "REMOVED51TDoAPAbWn7WhVRQbyweGhvz4GF4URxRqWU0QBgv1DtNbMT4KUB1IIDhqiHvVdT4A0MstkIzmflN2UAUjAkAqv7u00uhEtMruS"
+STRIPE_PUBLISHABLE_KEY = "pk_test_51TDoAPAbWn7WhVRQpxmIh8idOanR9hCI78qiUfODQqQaKMJEQwbknHVduLAGT9KXiFtlE4tswJiUEcVdRRuJEdGy00GArG8emF"

@@ -1,7 +1,7 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import CartItem
 from products.models import Product
+from products.serializers import ProductSerializer
 
 
 class AddToCartSerializer(serializers.Serializer):
@@ -22,18 +22,18 @@ class AddToCartSerializer(serializers.Serializer):
         return data
 
 
-class ProductInCartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ["id", "name", "price", "image"]
-
-
 class CartItemSerializer(serializers.ModelSerializer):
-    product = ProductInCartSerializer()
+    product = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
-        fields = ["product", "quantity"]
+        fields = ["id", "product", "quantity"]
+
+    def get_product(self, obj):
+        return ProductSerializer(
+            obj.product,
+            context=self.context
+        ).data
 
 
 class UpdateCartItemSerializer(serializers.Serializer):

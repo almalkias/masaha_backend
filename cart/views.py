@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 
 from .models import Cart, CartItem
 from .serializers import AddToCartSerializer, CartItemSerializer, UpdateCartItemSerializer
-from products.models import Product
 
 
 class AddToCartAPIView(APIView):
@@ -61,7 +60,7 @@ class CartAPIView(APIView):
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
         items = cart.items.select_related("product").all()
-        serializer = CartItemSerializer(items, many=True)
+        serializer = CartItemSerializer(items, many=True, context={"request": request})
 
         return Response({
             "items": serializer.data
@@ -72,7 +71,7 @@ class RemoveFromCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, item_id):
-        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart = get_object_or_404(Cart, user=request.user)
 
         cart_item = get_object_or_404(
             CartItem,
@@ -85,25 +84,34 @@ class RemoveFromCartAPIView(APIView):
         return Response({"message": "Item removed from cart"})
 
 
+class ClearCartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        deleted_count, _ = cart.items.all().delete()
+
+        return Response({
+            "message": "Cart cleared",
+            "deleted_items": deleted_count
+        })
+
+
 class UpdateCartItemAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, item_id):
         cart, _ = Cart.objects.get_or_create(user=request.user)
-
         cart_item = get_object_or_404(
             CartItem,
             id=item_id,
             cart=cart
         )
-
         serializer = UpdateCartItemSerializer(
             data=request.data,
-            context={"cart_item": cart_item}  # 🔥 هنا السر
+            context={"cart_item": cart_item}
         )
-
         serializer.is_valid(raise_exception=True)
-
         cart_item.quantity = serializer.validated_data["quantity"]
         cart_item.save()
 
@@ -111,4 +119,3 @@ class UpdateCartItemAPIView(APIView):
             "message": "Cart item updated",
             "quantity": cart_item.quantity
         })
-    
