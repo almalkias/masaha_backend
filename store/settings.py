@@ -20,13 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s$2))tytw95%=vucidgzqfvqn*k-g#fd^zk3i48wzpim8ml_i6'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 
 # Application definition
@@ -137,21 +131,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 6,
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-}
-
-STRIPE_SECRET_KEY = "REMOVED51TDoAPAbWn7WhVRQbyweGhvz4GF4URxRqWU0QBgv1DtNbMT4KUB1IIDhqiHvVdT4A0MstkIzmflN2UAUjAkAqv7u00uhEtMruS"
-STRIPE_PUBLISHABLE_KEY = "pk_test_51TDoAPAbWn7WhVRQpxmIh8idOanR9hCI78qiUfODQqQaKMJEQwbknHVduLAGT9KXiFtlE4tswJiUEcVdRRuJEdGy00GArG8emF"
-STRIPE_WEBHOOK_SECRET = "whsec_6ae9ad2b600f7f65268801db81e2093ac3a09fa7b0cf49bfa8d457b07592badb"
+try:
+    from .keys import *
+except ImportError:
+    pass
