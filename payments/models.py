@@ -12,6 +12,14 @@ class Payment(models.Model):
         (STATUS_FAILED, "Failed"),
     ]
 
+    order = models.ForeignKey(
+        "order.Order",
+        on_delete=models.CASCADE,
+        related_name="payments",
+        null=True,
+        blank=True
+    )
+
     user = models.ForeignKey(
         "accounts.CustomUser",
         on_delete=models.CASCADE,

@@ -64,8 +64,41 @@ class PaymentService:
 
         return hashlib.md5(raw_string.encode()).hexdigest()
 
+    def _create_order_from_cart(self):
+        from order.models import Order, OrderItem
+
+        cart = self._get_cart()
+        items = self._get_cart_items()
+
+        order = Order.objects.create(user=self.user)
+        total = Decimal("0.00")
+
+        for item in items:
+            product = item.product
+
+            # تحقق من المخزون
+            if item.quantity > product.stock:
+                raise PaymentValidationError(
+                    f"Only {product.stock} items available for {product.name}"
+                )
+
+            # إنشاء OrderItem
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=item.quantity,
+                price=product.price  # snapshot
+            )
+
+            total += product.price * item.quantity
+
+        order.total_price = total
+        order.save()
+
+        return order, total
+
     def create_payment_intent(self):
-        total = self._calculate_total()
+        order, total = self._create_order_from_cart()
         idempotency_key = self._generate_idempotency_key(total)
 
         try:
@@ -85,6 +118,7 @@ class PaymentService:
             stripe_payment_intent_id=intent.id,
             defaults={
                 "user": self.user,
+                "order": order,  # 🔥 أهم سطر
                 "amount": total,
                 "currency": self.CURRENCY,
                 "status": Payment.STATUS_PENDING,

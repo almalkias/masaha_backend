@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .serializers import CreatePaymentIntentSerializer, VerifyPaymentSerializer
+from .serializers import CreatePaymentIntentSerializer
 from .services import PaymentService
 from .exceptions import PaymentError, PaymentValidationError, PaymentGatewayError
 
@@ -39,24 +39,3 @@ class CreatePaymentIntentAPIView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
-
-
-class VerifyPaymentAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = VerifyPaymentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        service = PaymentService(user=request.user)
-
-        try:
-            payment = service.verify_payment(
-                serializer.validated_data["payment_intent_id"]
-            )
-        except PaymentError as exc:
-            return Response({"error": str(exc)}, status=400)
-
-        return Response({
-            "status": payment.status
-        })
