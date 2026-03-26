@@ -9,7 +9,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        # إضافة بيانات المستخدم
+        # Add user data
         data["user"] = {
             "id": self.user.id,
             "email": self.user.email,
@@ -50,10 +50,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", required=False)
 
-    # 🔥 حقل للكتابة
+    # Write-only upload field
     image = serializers.ImageField(required=False, allow_null=True)
 
-    # 🔥 حقل للقراءة (URL كامل)
+    # Read-only full image URL
     image_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -65,8 +65,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             "city",
             "birth_date",
             "email",
-            "image",      # للرفع
-            "image_url",  # للعرض
+            "image",      # Used for uploads
+            "image_url",  # Used for display
         ]
 
     def get_image_url(self, obj):
@@ -76,7 +76,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         return None
 
     def update(self, instance, validated_data):
-        # 🔥 تحديث الإيميل
+        # Update the email address
         user_data = validated_data.pop("user", None)
 
         if user_data:
@@ -94,19 +94,19 @@ class ChangePasswordSerializer(serializers.Serializer):
     def validate(self, data):
         user = self.context["request"].user
 
-        # ✅ تحقق من كلمة المرور الحالية
+        # Validate the current password
         if not user.check_password(data["current_password"]):
             raise serializers.ValidationError({
                 "current_password": "كلمة المرور الحالية غير صحيحة"
             })
 
-        # ✅ تحقق من التطابق
+        # Validate password confirmation
         if data["new_password"] != data["confirm_password"]:
             raise serializers.ValidationError({
                 "confirm_password": "كلمة المرور غير متطابقة"
             })
 
-        # ✅ تحقق من قوة الباسورد (Django validators)
+        # Validate password strength using Django validators
         validate_password(data["new_password"], user)
 
         return data

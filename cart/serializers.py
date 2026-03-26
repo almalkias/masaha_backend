@@ -43,7 +43,7 @@ class UpdateCartItemSerializer(serializers.Serializer):
         cart_item = self.context.get("cart_item")
 
         if not cart_item:
-            return value  # fallback (احتياطي)
+            return value  # Fallback if the cart item context is missing
 
         if value > cart_item.product.stock:
             raise serializers.ValidationError(

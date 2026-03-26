@@ -5,7 +5,7 @@ from .models import Payment
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
 
-    # 🔹 الأعمدة في القائمة
+    # Columns shown in the list view
     list_display = (
         "id",
         "user",
@@ -16,23 +16,23 @@ class PaymentAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    # 🔹 فلترة
+    # List filters
     list_filter = (
         "status",
         "currency",
         "created_at",
     )
 
-    # 🔹 البحث
+    # Search fields
     search_fields = (
         "user__email",
         "stripe_payment_intent_id",
     )
 
-    # 🔹 ترتيب
+    # Default ordering
     ordering = ("-created_at",)
 
-    # 🔹 readonly (مهم جدًا)
+    # Read-only fields
     readonly_fields = (
         "stripe_payment_intent_id",
         "amount",
@@ -41,7 +41,7 @@ class PaymentAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    # 🔹 تحسين العرض داخل الصفحة
+    # Improve the admin page layout
     fieldsets = (
         ("Payment Info", {
             "fields": (

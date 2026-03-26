@@ -44,25 +44,25 @@ class StripeWebhookAPIView(APIView):
             print(f"❌ Payment not found for intent: {payment_intent_id}")
             return
 
-        # 🛑 حماية من التكرار (Payment level)
+        # Prevent duplicate processing at the payment level
         if payment.status == Payment.STATUS_SUCCEEDED:
             print("⚠️ Payment already processed")
             return
 
         try:
             with transaction.atomic():
-                # ✅ تحديث حالة الدفع
+                # Update the payment status
                 payment.status = Payment.STATUS_SUCCEEDED
                 payment.save()
 
                 print("✅ Payment marked as succeeded")
 
-                # ✅ تنفيذ الطلب
+                # Finalize the order
                 self.finalize_order(payment)
 
         except Exception as e:
             print(f"❌ Error processing webhook: {str(e)}")
-            # مهم: نرجع 200 عشان Stripe ما يعيد الإرسال بشكل مزعج
+            # Return 200 so Stripe does not keep retrying the webhook
             return
 
     def finalize_order(self, payment):
@@ -75,7 +75,7 @@ class StripeWebhookAPIView(APIView):
             print("❌ No order linked to payment")
             return
 
-        # 🛑 حماية من التكرار (Order level)
+        # Prevent duplicate processing at the order level
         if getattr(order, "status", None) == "paid":
             print("⚠️ Order already finalized")
             return
@@ -87,25 +87,25 @@ class StripeWebhookAPIView(APIView):
         for item in order.items.select_related("product").all():
             product = item.product
 
-            # 🔴 تحقق من المخزون
+            # Validate available stock
             if item.quantity > product.stock:
                 raise Exception(
                     f"Not enough stock for {product.name}"
                 )
 
-            # 🔥 خصم المخزون
+            # Deduct the purchased quantity from stock
             product.stock -= item.quantity
             product.save()
 
             total += item.price * item.quantity
 
-        # ✅ تحديث الطلب
+        # Update the order
         order.total_price = total
         if hasattr(order, "status"):
             order.status = "paid"
         order.save()
 
-        # 🧹 حذف الكارت بعد النجاح
+        # Clear the cart after a successful payment
         Cart.objects.filter(user=user).delete()
 
         print("✅ Order finalized + cart cleared")

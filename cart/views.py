@@ -19,10 +19,10 @@ class AddToCartAPIView(APIView):
         product = serializer.validated_data["product"]
         quantity = serializer.validated_data["quantity"]
 
-        # 🔹 نجيب الكارت
+        # Get or create the user's cart
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
-        # 🔹 هل المنتج موجود؟
+        # Check whether the product is already in the cart
         cart_item = CartItem.objects.filter(
             cart=cart,
             product=product
@@ -31,7 +31,7 @@ class AddToCartAPIView(APIView):
         if cart_item:
             new_quantity = cart_item.quantity + quantity
 
-            # 🔴 تحقق إضافي (مهم جدًا)
+            # Prevent the quantity from exceeding available stock
             if new_quantity > product.stock:
                 return Response(
                     {"error": f"Only {product.stock} items available"},

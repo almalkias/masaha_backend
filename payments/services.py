@@ -53,7 +53,7 @@ class PaymentService:
                 "id": item.id,
                 "quantity": item.quantity,
             }
-            for item in self._get_cart_items()  # 👈 لازم تكون عندك
+            for item in self._get_cart_items()  # Use current cart items in the idempotency key
         ]
 
         raw_string = json.dumps({
@@ -76,18 +76,18 @@ class PaymentService:
         for item in items:
             product = item.product
 
-            # تحقق من المخزون
+            # Validate available stock
             if item.quantity > product.stock:
                 raise PaymentValidationError(
                     f"Only {product.stock} items available for {product.name}"
                 )
 
-            # إنشاء OrderItem
+            # Create the order item
             OrderItem.objects.create(
                 order=order,
                 product=product,
                 quantity=item.quantity,
-                price=product.price  # snapshot
+                price=product.price  # Preserve the price at checkout time
             )
 
             total += product.price * item.quantity
@@ -118,7 +118,7 @@ class PaymentService:
             stripe_payment_intent_id=intent.id,
             defaults={
                 "user": self.user,
-                "order": order,  # 🔥 أهم سطر
+                "order": order,  # Link the payment to the created order
                 "amount": total,
                 "currency": self.CURRENCY,
                 "status": Payment.STATUS_PENDING,

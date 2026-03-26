@@ -21,14 +21,14 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    username = None  # حذفنا username
+    username = None  # Username is removed in favor of email login
 
     email = models.EmailField(unique=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = UserManager()  # 👈 مهم جدًا
+    objects = UserManager()  # Custom manager for email-based authentication
 
     def __str__(self):
         return self.email

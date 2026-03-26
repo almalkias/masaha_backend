@@ -20,7 +20,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # سعر وقت الطلب
+    price = models.DecimalField(max_digits=10, decimal_places=2)  # Price captured at order time
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"

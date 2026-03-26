@@ -7,7 +7,7 @@ from products.serializers import ProductSerializer
 from .models import Favourite
 
 
-# ✅ GET (يرجع المنتجات مباشرة)
+# Return the favorited products directly
 class FavouriteListAPIView(ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
@@ -18,7 +18,7 @@ class FavouriteListAPIView(ListAPIView):
         )
 
 
-# ✅ ADD + REMOVE (toggle)
+# Add or remove a favorite entry
 class FavouriteToggleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
