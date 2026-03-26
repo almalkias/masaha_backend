@@ -12,11 +12,11 @@ environ.Env.read_env()
 
 # Django
 DEBUG = env("DEBUG")
-
 SECRET_KEY = env("SECRET_KEY")
-
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
+FRONTEND_URL = env("FRONTEND_URL")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {

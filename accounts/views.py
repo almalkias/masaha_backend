@@ -4,7 +4,15 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import RegisterSerializer, ProfileSerializer, ChangePasswordSerializer, CustomTokenObtainPairSerializer
+from .serializers import (
+    ProfileUpdateSerializer,
+    RegisterSerializer,
+    ProfileSerializer,
+    ChangePasswordSerializer,
+    CustomTokenObtainPairSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordConfirmSerializer,
+)
 
 
 class RegisterAPIView(APIView):
@@ -32,20 +40,25 @@ class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = ProfileSerializer(request.user.profile, context={"request": request})
+        serializer = ProfileSerializer(
+            request.user.profile, context={"request": request})
         return Response(serializer.data)
 
     def put(self, request):
-        serializer = ProfileSerializer(
+        serializer = ProfileUpdateSerializer(
             request.user.profile,
             data=request.data,
-            partial=True, 
+            partial=True,
             context={"request": request}
         )
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            detail_serializer = ProfileSerializer(
+                request.user.profile,
+                context={"request": request}
+            )
+            return Response(detail_serializer.data)
 
         return Response(serializer.errors, status=400)
 
@@ -84,4 +97,32 @@ class ChangePasswordAPIView(APIView):
             return Response({"message": "Password updated successfully"})
 
         return Response(serializer.errors, status=400)
+
+
+class ForgotPasswordAPIView(APIView):
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "If an account with this email exists, a reset link has been sent."},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordConfirmAPIView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordConfirmSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Password has been reset successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
