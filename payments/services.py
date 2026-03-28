@@ -67,38 +67,40 @@ class PaymentService:
     def _create_order_from_cart(self):
         from order.models import Order, OrderItem
 
-        cart = self._get_cart()
         items = self._get_cart_items()
+        tax_rate = Decimal(str(settings.TAX_RATE))
 
         order = Order.objects.create(user=self.user)
-        total = Decimal("0.00")
+        subtotal = Decimal("0.00")
 
         for item in items:
             product = item.product
 
-            # Validate available stock
             if item.quantity > product.stock:
                 raise PaymentValidationError(
                     f"Only {product.stock} items available for {product.name}"
                 )
 
-            # Create the order item
             OrderItem.objects.create(
                 order=order,
                 product=product,
                 quantity=item.quantity,
-                price=product.price  # Preserve the price at checkout time
+                price=product.price,
             )
 
-            total += product.price * item.quantity
+            subtotal += product.price * item.quantity
 
+        tax_amount = (subtotal * tax_rate).quantize(Decimal("0.01"))
+        total = subtotal + tax_amount
+
+        order.tax_amount = tax_amount
         order.total_price = total
         order.save()
 
-        return order, total
+        return order, subtotal, tax_amount, total
 
     def create_payment_intent(self):
-        order, total = self._create_order_from_cart()
+        order, subtotal, tax_amount, total = self._create_order_from_cart()
         idempotency_key = self._generate_idempotency_key(total)
 
         try:
@@ -118,7 +120,7 @@ class PaymentService:
             stripe_payment_intent_id=intent.id,
             defaults={
                 "user": self.user,
-                "order": order,  # Link the payment to the created order
+                "order": order,
                 "amount": total,
                 "currency": self.CURRENCY,
                 "status": Payment.STATUS_PENDING,
@@ -129,6 +131,8 @@ class PaymentService:
             "payment": payment,
             "client_secret": intent.client_secret,
             "payment_intent_id": intent.id,
+            "subtotal": str(subtotal),
+            "tax_amount": str(tax_amount),
             "amount": str(total),
             "currency": self.CURRENCY,
         }

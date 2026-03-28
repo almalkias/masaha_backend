@@ -82,25 +82,22 @@ class StripeWebhookAPIView(APIView):
 
         print(f"🚀 Finalizing order {order.id}")
 
-        total = 0
+        subtotal = 0
 
         for item in order.items.select_related("product").all():
             product = item.product
 
-            # Validate available stock
             if item.quantity > product.stock:
                 raise Exception(
                     f"Not enough stock for {product.name}"
                 )
 
-            # Deduct the purchased quantity from stock
             product.stock -= item.quantity
             product.save()
 
-            total += item.price * item.quantity
+            subtotal += item.price * item.quantity
 
-        # Update the order
-        order.total_price = total
+        order.total_price = subtotal + order.tax_amount
         if hasattr(order, "status"):
             order.status = "paid"
         order.save()

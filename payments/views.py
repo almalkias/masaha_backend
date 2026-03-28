@@ -34,6 +34,8 @@ class CreatePaymentIntentAPIView(APIView):
             {
                 "client_secret": result["client_secret"],
                 "payment_intent_id": result["payment_intent_id"],
+                "subtotal": result["subtotal"],
+                "tax_amount": result["tax_amount"],
                 "amount": result["amount"],
                 "currency": result["currency"],
             },

@@ -6,6 +6,7 @@ from store.settings import TIME_ZONE
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
+    TAX_RATE=(float, 0.15),
 )
 
 environ.Env.read_env()
@@ -32,6 +33,8 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+TAX_RATE = env("TAX_RATE")
 
 # STRIPE
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
