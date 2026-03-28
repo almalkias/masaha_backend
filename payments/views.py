@@ -17,8 +17,10 @@ class CreatePaymentIntentAPIView(APIView):
 
         service = PaymentService(user=request.user)
 
+        coupon_code = serializer.validated_data.get("coupon_code", "")
+
         try:
-            result = service.create_payment_intent()
+            result = service.create_payment_intent(coupon_code=coupon_code)
         except PaymentValidationError as exc:
             return Response(
                 {"error": str(exc)},
@@ -35,6 +37,7 @@ class CreatePaymentIntentAPIView(APIView):
                 "client_secret": result["client_secret"],
                 "payment_intent_id": result["payment_intent_id"],
                 "subtotal": result["subtotal"],
+                "discount_amount": result["discount_amount"],
                 "tax_amount": result["tax_amount"],
                 "amount": result["amount"],
                 "currency": result["currency"],

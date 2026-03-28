@@ -2,4 +2,4 @@ from rest_framework import serializers
 
 
 class CreatePaymentIntentSerializer(serializers.Serializer):
-    pass
+    coupon_code = serializers.CharField(required=False, allow_blank=True, default="")

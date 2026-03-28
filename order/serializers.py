@@ -16,7 +16,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "subtotal", "tax_amount", "total_price", "created_at", "items", "status"]
+        fields = ["id", "coupon_code", "subtotal", "discount_amount", "tax_amount", "total_price", "created_at", "items", "status"]
 
     def get_subtotal(self, obj):
-        return str(obj.total_price - obj.tax_amount)
+        return str(obj.total_price - obj.tax_amount + obj.discount_amount)

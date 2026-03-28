@@ -47,24 +47,25 @@ class PaymentService:
 
         return total
 
-    def _generate_idempotency_key(self, total):
+    def _generate_idempotency_key(self, total, coupon_code=""):
         cart_data = [
             {
                 "id": item.id,
                 "quantity": item.quantity,
             }
-            for item in self._get_cart_items()  # Use current cart items in the idempotency key
+            for item in self._get_cart_items()
         ]
 
         raw_string = json.dumps({
             "user": self.user.id,
             "cart": cart_data,
             "total": str(total),
+            "coupon": coupon_code,
         }, sort_keys=True)
 
         return hashlib.md5(raw_string.encode()).hexdigest()
 
-    def _create_order_from_cart(self):
+    def _create_order_from_cart(self, coupon=None):
         from order.models import Order, OrderItem
 
         items = self._get_cart_items()
@@ -90,18 +91,32 @@ class PaymentService:
 
             subtotal += product.price * item.quantity
 
-        tax_amount = (subtotal * tax_rate).quantize(Decimal("0.01"))
-        total = subtotal + tax_amount
+        discount_amount = coupon.calculate_discount(subtotal) if coupon else Decimal("0.00")
+        discounted = subtotal - discount_amount
+        tax_amount = (discounted * tax_rate).quantize(Decimal("0.01"))
+        total = discounted + tax_amount
 
+        order.coupon_code = coupon.code if coupon else ""
+        order.discount_amount = discount_amount
         order.tax_amount = tax_amount
         order.total_price = total
         order.save()
 
-        return order, subtotal, tax_amount, total
+        return order, subtotal, discount_amount, tax_amount, total
 
-    def create_payment_intent(self):
-        order, subtotal, tax_amount, total = self._create_order_from_cart()
-        idempotency_key = self._generate_idempotency_key(total)
+    def create_payment_intent(self, coupon_code=""):
+        from coupons.models import Coupon
+
+        coupon = None
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code)
+                coupon.validate_for_user(self.user)
+            except Coupon.DoesNotExist:
+                raise PaymentValidationError("Coupon not found.")
+
+        order, subtotal, discount_amount, tax_amount, total = self._create_order_from_cart(coupon=coupon)
+        idempotency_key = self._generate_idempotency_key(total, coupon_code)
 
         try:
             intent = stripe.PaymentIntent.create(
@@ -132,6 +147,7 @@ class PaymentService:
             "client_secret": intent.client_secret,
             "payment_intent_id": intent.id,
             "subtotal": str(subtotal),
+            "discount_amount": str(discount_amount),
             "tax_amount": str(tax_amount),
             "amount": str(total),
             "currency": self.CURRENCY,

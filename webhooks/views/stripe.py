@@ -102,6 +102,14 @@ class StripeWebhookAPIView(APIView):
             order.status = "paid"
         order.save()
 
+        if order.coupon_code:
+            from django.db.models import F
+            from coupons.models import Coupon, CouponUsage
+            coupon = Coupon.objects.filter(code=order.coupon_code).first()
+            if coupon:
+                CouponUsage.objects.get_or_create(coupon=coupon, user=user)
+                Coupon.objects.filter(pk=coupon.pk).update(times_used=F("times_used") + 1)
+
         # Clear the cart after a successful payment
         Cart.objects.filter(user=user).delete()
 

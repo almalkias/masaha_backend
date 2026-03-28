@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'favourites',
     'payments',
     'webhooks',
+    'coupons',
 ]
 
 MIDDLEWARE = [
