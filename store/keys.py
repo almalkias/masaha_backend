@@ -1,7 +1,10 @@
 from datetime import timedelta
+from pathlib import Path
 
 import environ
 from store.settings import TIME_ZONE
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -9,7 +12,7 @@ env = environ.Env(
     TAX_RATE=(float, 0.15),
 )
 
-environ.Env.read_env()
+environ.Env.read_env(BASE_DIR / ".env")
 
 # Django
 DEBUG = env("DEBUG")
