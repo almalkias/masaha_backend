@@ -11,8 +11,8 @@ from .serializers import CouponValidateSerializer, CouponSerializer
 class ValidateCouponAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        serializer = CouponValidateSerializer(data=request.query_params)
+    def post(self, request):
+        serializer = CouponValidateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         code = serializer.validated_data["code"]
