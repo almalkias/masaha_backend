@@ -25,3 +25,4 @@ store/.env
 .mypy_cache/
 .ruff_cache/
 *.pyc
+store/keys.py
