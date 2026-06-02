@@ -155,11 +155,9 @@ CLOUDINARY_STORAGE = {
 if os.environ.get('DATABASE_URL'):
     # Production
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-else:
-    # Local — يبقى على الـ disk
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
-MEDIA_URL = 'media/'
+
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
