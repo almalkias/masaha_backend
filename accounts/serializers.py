@@ -6,7 +6,7 @@ from .models import CustomUser, Profile
 
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+import resend
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -167,13 +167,13 @@ class ForgotPasswordSerializer(serializers.Serializer):
         frontend_url = getattr(settings, "FRONTEND_URL")
         reset_link = f"{frontend_url}/reset-password-confirm?uid={uid}&token={token}"
 
-        send_mail(
-            subject="Reset your password",
-            message=f"Use this link to reset your password:\n\n{reset_link}",
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL"),
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        resend.api_key = settings.RESEND_API_KEY
+        resend.Emails.send({
+            "from": "onboarding@resend.dev",
+            "to": user.email,
+            "subject": "Reset your password",
+            "html": f"<p>Use this link to reset your password:</p><p><a href='{reset_link}'>{reset_link}</a></p>",
+        })
 
 
 class ResetPasswordConfirmSerializer(serializers.Serializer):
