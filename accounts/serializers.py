@@ -38,21 +38,19 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         password = data.get("password")
         password_confirm = data.get("password_confirm")
-        email = data.get("email")
 
         if password != password_confirm:
             raise serializers.ValidationError({
                 "password_confirm": "Passwords do not match."
             })
 
-        temp_user = CustomUser(email=email)
-        validate_password(password, user=temp_user)
+        validate_password(password)
 
         return data
 
     def create(self, validated_data):
-        # Remove temporary field used only for validation
         validated_data.pop("password_confirm")
+        # create_user hashes the password before saving
         return CustomUser.objects.create_user(**validated_data)
 
 
@@ -77,7 +75,7 @@ class ChangePasswordSerializer(serializers.Serializer):
             })
 
         # Validate password strength using Django validators
-        validate_password(data["new_password"], user)
+        validate_password(data["new_password"])
 
         return data
 
@@ -107,7 +105,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", required=False)
-    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Profile
@@ -133,6 +130,11 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
                     "email": "The new email address is the same as the current one."
                 })
 
+            if CustomUser.objects.filter(email__iexact=new_email).exists():
+                raise serializers.ValidationError({
+                    "email": "This email is already in use."
+                })
+
         return attrs
 
     def update(self, instance, validated_data):
@@ -142,8 +144,10 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             instance.user.email = user_data.get("email", instance.user.email)
             instance.user.save()
 
-        return super().update(instance, validated_data)
+        if "image" in validated_data and instance.image:
+            instance.image.delete(save=False)
 
+        return super().update(instance, validated_data)
 
 
 class ForgotPasswordSerializer(serializers.Serializer):

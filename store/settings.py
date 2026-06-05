@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://iqtinaaart.netlify.app",
+    "https://masaha-art.netlify.app",
 ]
 
 # Application definition
