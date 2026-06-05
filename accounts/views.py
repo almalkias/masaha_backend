@@ -1,3 +1,4 @@
+from django.utils.translation import gettext_lazy as _
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -23,7 +24,7 @@ class RegisterAPIView(APIView):
             user = serializer.save()
             return Response(
                 {
-                    "message": "User created successfully",
+                    "message": _("User created successfully"),
                     "email": user.email
                 },
                 status=status.HTTP_201_CREATED
@@ -70,14 +71,14 @@ class LogoutAPIView(APIView):
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
-            return Response({"error": "Refresh token is required"}, status=400)
+            return Response({"error": _("Refresh token is required")}, status=400)
 
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response({"message": "Logged out successfully"})
+            return Response({"message": _("Logged out successfully")})
         except TokenError:
-            return Response({"error": "Invalid or expired token"}, status=400)
+            return Response({"error": _("Invalid or expired token")}, status=400)
 
 
 class ChangePasswordAPIView(APIView):
@@ -94,7 +95,7 @@ class ChangePasswordAPIView(APIView):
             user.set_password(serializer.validated_data["new_password"])
             user.save()
 
-            return Response({"message": "Password updated successfully"})
+            return Response({"message": _("Password updated successfully")})
 
         return Response(serializer.errors, status=400)
 
@@ -106,7 +107,7 @@ class ForgotPasswordAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "If an account with this email exists, a reset link has been sent."},
+                {"message": _("If an account with this email exists, a reset link has been sent.")},
                 status=status.HTTP_200_OK,
             )
 
@@ -120,7 +121,7 @@ class ResetPasswordConfirmAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "Password has been reset successfully."},
+                {"message": _("Password has been reset successfully.")},
                 status=status.HTTP_200_OK,
             )
 

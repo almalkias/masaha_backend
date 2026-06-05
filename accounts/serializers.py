@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -18,7 +19,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        # Add user data
         data["user"] = {
             "id": self.user.id,
             "email": self.user.email,
@@ -41,7 +41,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         if password != password_confirm:
             raise serializers.ValidationError({
-                "password_confirm": "Passwords do not match."
+                "password_confirm": _("Passwords do not match.")
             })
 
         validate_password(password)
@@ -62,19 +62,16 @@ class ChangePasswordSerializer(serializers.Serializer):
     def validate(self, data):
         user = self.context["request"].user
 
-        # Validate the current password
         if not user.check_password(data["current_password"]):
             raise serializers.ValidationError({
-                "current_password": "Current password is incorrect."
+                "current_password": _("Current password is incorrect.")
             })
 
-        # Validate password confirmation
         if data["new_password"] != data["confirm_password"]:
             raise serializers.ValidationError({
-                "confirm_password": "Passwords do not match."
+                "confirm_password": _("Passwords do not match.")
             })
 
-        # Validate password strength using Django validators
         validate_password(data["new_password"])
 
         return data
@@ -127,12 +124,12 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
             if current_email and new_email.strip().lower() == current_email.strip().lower():
                 raise serializers.ValidationError({
-                    "email": "The new email address is the same as the current one."
+                    "email": _("The new email address is the same as the current one.")
                 })
 
             if CustomUser.objects.filter(email__iexact=new_email).exists():
                 raise serializers.ValidationError({
-                    "email": "This email is already in use."
+                    "email": _("This email is already in use.")
                 })
 
         return attrs
@@ -190,7 +187,7 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
 
         if new_password != confirm_password:
             raise serializers.ValidationError({
-                "confirm_password": "Passwords do not match."
+                "confirm_password": _("Passwords do not match.")
             })
 
         try:
@@ -198,12 +195,12 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
             user = CustomUser.objects.get(pk=user_id)
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             raise serializers.ValidationError({
-                "uid": "Invalid reset link."
+                "uid": _("Invalid reset link.")
             })
 
         if not default_token_generator.check_token(user, token):
             raise serializers.ValidationError({
-                "token": "Invalid or expired reset token."
+                "token": _("Invalid or expired reset token.")
             })
 
         validate_password(new_password, user)
@@ -219,4 +216,3 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
         user.save()
 
         return user
-    
