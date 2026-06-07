@@ -8,18 +8,18 @@ class AddToCartSerializer(serializers.Serializer):
     product = serializers.PrimaryKeyRelatedField(
         queryset=Product.objects.filter(is_active=True)
     )
-    quantity = serializers.IntegerField(min_value=1)
+    # quantity = serializers.IntegerField(min_value=1)
 
-    def validate(self, data):
-        product = data["product"]
-        quantity = data["quantity"]
+    # def validate(self, data):
+    #     product = data["product"]
+    #     quantity = data["quantity"]
 
-        if quantity > product.stock:
-            raise serializers.ValidationError(
-                {"quantity": f"Only {product.stock} items available"}
-            )
+    #     if quantity > product.stock:
+    #         raise serializers.ValidationError(
+    #             {"quantity": f"Only {product.stock} items available"}
+    #         )
 
-        return data
+    #     return data
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ["id", "product", "quantity"]
+        fields = ["id", "product"]
 
     def get_product(self, obj):
         return ProductSerializer(
@@ -36,18 +36,18 @@ class CartItemSerializer(serializers.ModelSerializer):
         ).data
 
 
-class UpdateCartItemSerializer(serializers.Serializer):
-    quantity = serializers.IntegerField(min_value=1)
+# class UpdateCartItemSerializer(serializers.Serializer):
+#     quantity = serializers.IntegerField(min_value=1)
 
-    def validate_quantity(self, value):
-        cart_item = self.context.get("cart_item")
+#     def validate_quantity(self, value):
+#         cart_item = self.context.get("cart_item")
 
-        if not cart_item:
-            return value  # Fallback if the cart item context is missing
+#         if not cart_item:
+#             return value  # Fallback if the cart item context is missing
 
-        if value > cart_item.product.stock:
-            raise serializers.ValidationError(
-                f"Only {cart_item.product.stock} items available"
-            )
+#         if value > cart_item.product.stock:
+#             raise serializers.ValidationError(
+#                 f"Only {cart_item.product.stock} items available"
+#             )
 
-        return value
+#         return value

@@ -12,7 +12,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "price",
-            "stock",
             "image",
             "is_active",
             "created_at",

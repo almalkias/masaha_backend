@@ -85,17 +85,7 @@ class StripeWebhookAPIView(APIView):
         subtotal = 0
 
         for item in order.items.select_related("product").all():
-            product = item.product
-
-            if item.quantity > product.stock:
-                raise Exception(
-                    f"Not enough stock for {product.name}"
-                )
-
-            product.stock -= item.quantity
-            product.save()
-
-            subtotal += item.price * item.quantity
+            subtotal += item.price
 
         order.total_price = subtotal + order.tax_amount
         if hasattr(order, "status"):

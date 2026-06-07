@@ -16,6 +16,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ("order", "product", "quantity", "price")
+    list_display = ("order", "product", "price")
     search_fields = ("product__name",)
     

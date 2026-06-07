@@ -9,7 +9,7 @@ from .serializers import ProductSerializer
 
     
 class ProductListAPIView(ListAPIView):
-    queryset = Product.objects.filter(is_active=True, stock__gt=0).order_by("-id")
+    queryset = Product.objects.filter(is_active=True).order_by("-id")
     serializer_class = ProductSerializer
 
     def get_serializer_context(self):

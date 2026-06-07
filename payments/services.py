@@ -35,12 +35,7 @@ class PaymentService:
         total = Decimal("0.00")
 
         for item in items:
-            if item.quantity > item.product.stock:
-                raise PaymentValidationError(
-                    f"Only {item.product.stock} items available for {item.product.name}."
-                )
-
-            total += item.product.price * item.quantity
+            total += item.product.price
 
         if total <= 0:
             raise PaymentValidationError("Invalid cart total.")
@@ -51,7 +46,6 @@ class PaymentService:
         cart_data = [
             {
                 "id": item.id,
-                "quantity": item.quantity,
             }
             for item in self._get_cart_items()
         ]
@@ -77,19 +71,14 @@ class PaymentService:
         for item in items:
             product = item.product
 
-            if item.quantity > product.stock:
-                raise PaymentValidationError(
-                    f"Only {product.stock} items available for {product.name}"
-                )
-
             OrderItem.objects.create(
                 order=order,
                 product=product,
-                quantity=item.quantity,
+                quantity=1,
                 price=product.price,
             )
 
-            subtotal += product.price * item.quantity
+            subtotal += product.price
 
         discount_amount = coupon.calculate_discount(subtotal) if coupon else Decimal("0.00")
         discounted = subtotal - discount_amount

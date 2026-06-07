@@ -23,7 +23,7 @@ class CartAdmin(admin.ModelAdmin):
             return "-"
 
         return ", ".join(
-            f"{item.product.name} x{item.quantity}"
+            f"{item.product.name}"
             for item in items
         )
 
@@ -32,4 +32,4 @@ class CartAdmin(admin.ModelAdmin):
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_display = ("id", "cart", "product", "quantity")
+    list_display = ("id", "cart", "product")

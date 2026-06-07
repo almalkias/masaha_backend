@@ -1,0 +1,132 @@
+[
+{
+  "model": "products.product",
+  "pk": 1,
+  "fields": {
+    "name": "وحدة",
+    "description": "شجرة منفردة وسط بياض الثلج. لوحة بسيطة وهادئة تعبّر عن السكون والتأمل، تناسب المساحات الحديثة والمينيماليّة.",
+    "price": "200.00",
+    "stock": 1,
+    "image": "products/Frame_1.png",
+    "is_active": true,
+    "created_at": "2026-03-21T02:32:50.709Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 2,
+  "fields": {
+    "name": "ظلال الصفصاف",
+    "description": "مشهد مستوحى من فن الآرت ديكو الكلاسيكي، يجمع بين الرقة والحياة. لوحة أنيقة تضفي لمسة راقية على أي غرفة.",
+    "price": "2000.00",
+    "stock": 1,
+    "image": "products/Frame_2.png",
+    "is_active": true,
+    "created_at": "2026-03-21T02:33:14.222Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 3,
+  "fields": {
+    "name": "موجات النيون",
+    "description": "تموجات لونية نابضة بين الوردي والفيروزي. قطعة عصرية جريئة تناسب عشّاق الفن الرقمي والتصاميم الحديثة.",
+    "price": "400.00",
+    "stock": 1,
+    "image": "products/Frame_3_ELcIb84.png",
+    "is_active": true,
+    "created_at": "2026-03-21T02:33:33.939Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 4,
+  "fields": {
+    "name": "لوحة 4",
+    "description": "",
+    "price": "1000.00",
+    "stock": 1,
+    "image": "products/Frame_4.png",
+    "is_active": false,
+    "created_at": "2026-03-21T02:34:01.723Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 5,
+  "fields": {
+    "name": "خريف الذهب",
+    "description": "أوراق نحاسية متشابكة يتسلل إليها ضوء دافئ. لوحة طبيعية تبعث على الهدوء وتليق بالمساحات الدافئة",
+    "price": "250.00",
+    "stock": 1,
+    "image": "products/Frame_7.png",
+    "is_active": true,
+    "created_at": "2026-03-21T13:59:08.939Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 6,
+  "fields": {
+    "name": "ليل الحرير",
+    "description": "تموجات سوداء وزرقاء تشبه الحرير المتدفق. قطعة فاخرة بطابع درامي أنيق، تناسب الديكورات العصرية الراقية.",
+    "price": "450.00",
+    "stock": 1,
+    "image": "products/Frame_8.png",
+    "is_active": true,
+    "created_at": "2026-03-21T13:59:37.409Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 9,
+  "fields": {
+    "name": "فسيفساء الروح",
+    "description": "وجه أنثوي مكسور بأشكال هندسية ملوّنة. لوحة جريئة تحتفي بتعدد الهويات والمشاعر، مثالية للمساحات الإبداعية.",
+    "price": "340.00",
+    "stock": 1,
+    "image": "products/frame_40_xxv7xNi.png",
+    "is_active": true,
+    "created_at": "2026-03-22T03:17:13.821Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 11,
+  "fields": {
+    "name": "قرية الضباب",
+    "description": "رسمة مائية ناعمة لقرية أوروبية قديمة. تمنح إحساساً بالسفر عبر الزمن، مناسبة للمكاتب والمكتبات المنزلية.",
+    "price": "120.00",
+    "stock": 1,
+    "image": "products/Frame_6.png",
+    "is_active": true,
+    "created_at": "2026-03-22T03:19:31.554Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 12,
+  "fields": {
+    "name": "توهّج",
+    "description": "يد مضاءة بضوء أحمر وأزرق متقابلين، تعبّر عن التناقض بين الدفء والبرودة. قطعة تصويرية فنية ذات طابع معاصر.",
+    "price": "100.00",
+    "stock": 1,
+    "image": "products/Frame_5_QE15kJ8.png",
+    "is_active": true,
+    "created_at": "2026-03-27T14:16:29.707Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 14,
+  "fields": {
+    "name": "xxx",
+    "description": "xxx",
+    "price": "200.00",
+    "stock": 1,
+    "image": "products/الل.jpg",
+    "is_active": false,
+    "created_at": "2026-03-29T05:57:41.175Z"
+  }
+}
+]
