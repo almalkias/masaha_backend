@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from payments.exceptions import PaymentValidationError
+from cart.models import Cart
 from .models import Coupon
 from .serializers import CouponValidateSerializer, CouponSerializer
 
@@ -25,4 +26,10 @@ class ValidateCouponAPIView(APIView):
         except PaymentValidationError as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(CouponSerializer(coupon).data)
+        cart = Cart.objects.prefetch_related("items__product").get(user=request.user)
+        subtotal = sum(item.product.price for item in cart.items.all())
+        discount_amount = coupon.calculate_discount(subtotal)
+
+        data = CouponSerializer(coupon).data
+        data["discount_amount"] = str(discount_amount)
+        return Response(data)
