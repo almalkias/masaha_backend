@@ -34,6 +34,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
     # Read-only fields
     readonly_fields = (
+        "order",
         "stripe_payment_intent_id",
         "amount",
         "currency",
@@ -46,6 +47,7 @@ class PaymentAdmin(admin.ModelAdmin):
         ("Payment Info", {
             "fields": (
                 "user",
+                "order",
                 "status",
             )
         }),
