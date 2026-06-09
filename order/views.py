@@ -12,7 +12,7 @@ class OrderListAPIView(APIView):
     def get(self, request):
         orders = Order.objects.filter(
             user=request.user,
-            status="paid"
+            status=Order.STATUS_PAID
         ).order_by("-created_at")
 
         serializer = OrderSerializer(orders, many=True)

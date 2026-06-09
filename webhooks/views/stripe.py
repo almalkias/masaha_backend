@@ -66,7 +66,7 @@ class StripeWebhookAPIView(APIView):
             return
 
     def finalize_order(self, payment):
-        from cart.models import Cart
+        from cart.models import CartItem
 
         order = payment.order
         user = payment.user
@@ -76,20 +76,15 @@ class StripeWebhookAPIView(APIView):
             return
 
         # Prevent duplicate processing at the order level
-        if getattr(order, "status", None) == "paid":
+        from order.models import Order
+
+        if order.status == Order.STATUS_PAID:
             print("⚠️ Order already finalized")
             return
 
         print(f"🚀 Finalizing order {order.id}")
 
-        subtotal = 0
-
-        for item in order.items.select_related("product").all():
-            subtotal += item.price
-
-        order.total_price = subtotal + order.tax_amount
-        if hasattr(order, "status"):
-            order.status = "paid"
+        order.status = Order.STATUS_PAID
         order.save()
 
         if order.coupon_code:
@@ -101,6 +96,6 @@ class StripeWebhookAPIView(APIView):
                 Coupon.objects.filter(pk=coupon.pk).update(times_used=F("times_used") + 1)
 
         # Clear the cart after a successful payment
-        Cart.objects.filter(user=user).delete()
+        CartItem.objects.filter(cart__user=user).delete()
 
         print("✅ Order finalized + cart cleared")

@@ -89,6 +89,8 @@ class PaymentService:
         return order
 
     def _cancel_stale_pending_payments(self):
+        from order.models import Order
+
         stale_payments = Payment.objects.filter(
             user=self.user,
             status=Payment.STATUS_PENDING,
@@ -102,7 +104,7 @@ class PaymentService:
             payment.status = Payment.STATUS_FAILED
             payment.save()
             if payment.order:
-                payment.order.status = "cancelled"
+                payment.order.status = Order.STATUS_CANCELLED
                 payment.order.save()
 
     def create_payment_intent(self, coupon_code=""):
