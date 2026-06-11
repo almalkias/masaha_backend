@@ -108,6 +108,7 @@ class PaymentService:
                 payment.order.save()
 
     def create_payment_intent(self, coupon_code=""):
+        import uuid
         from coupons.models import Coupon
 
         coupon = None
@@ -119,9 +120,35 @@ class PaymentService:
                 raise PaymentValidationError("Coupon not found.")
 
         subtotal, discount_amount, tax_amount, total = self._calculate_totals(coupon=coupon)
-        idempotency_key = self._generate_idempotency_key(total, coupon_code)
+
+        # Reuse an existing pending PI if the cart total hasn't changed
+        reusable = Payment.objects.filter(
+            user=self.user,
+            status=Payment.STATUS_PENDING,
+            amount=total,
+        ).select_related("order").first()
+
+        if reusable:
+            try:
+                intent = stripe.PaymentIntent.retrieve(reusable.stripe_payment_intent_id)
+                if intent.status in ("requires_payment_method", "requires_confirmation", "requires_action"):
+                    return {
+                        "payment": reusable,
+                        "client_secret": intent.client_secret,
+                        "payment_intent_id": intent.id,
+                        "subtotal": str(subtotal),
+                        "discount_amount": str(discount_amount),
+                        "tax_amount": str(tax_amount),
+                        "amount": str(total),
+                        "currency": self.CURRENCY,
+                    }
+            except stripe.error.StripeError:
+                pass
 
         self._cancel_stale_pending_payments()
+
+        # Unique suffix prevents collision with any previously cancelled PI's idempotency key
+        idempotency_key = self._generate_idempotency_key(total, coupon_code) + "_" + uuid.uuid4().hex[:8]
 
         try:
             intent = stripe.PaymentIntent.create(
@@ -135,23 +162,6 @@ class PaymentService:
             )
         except stripe.error.StripeError as exc:
             raise PaymentGatewayError(str(exc))
-
-        # If a payment already exists for this intent, reuse it — no new order
-        existing_payment = Payment.objects.filter(
-            stripe_payment_intent_id=intent.id
-        ).first()
-
-        if existing_payment:
-            return {
-                "payment": existing_payment,
-                "client_secret": intent.client_secret,
-                "payment_intent_id": intent.id,
-                "subtotal": str(subtotal),
-                "discount_amount": str(discount_amount),
-                "tax_amount": str(tax_amount),
-                "amount": str(total),
-                "currency": self.CURRENCY,
-            }
 
         order = self._create_order(coupon, subtotal, discount_amount, tax_amount, total)
 

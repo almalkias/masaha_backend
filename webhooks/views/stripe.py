@@ -62,8 +62,7 @@ class StripeWebhookAPIView(APIView):
 
         except Exception as e:
             print(f"❌ Error processing webhook: {str(e)}")
-            # Return 200 so Stripe does not keep retrying the webhook
-            return
+            return Response({"error": "processing failed"}, status=500)
 
     def finalize_order(self, payment):
         from cart.models import CartItem
